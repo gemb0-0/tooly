@@ -1,25 +1,31 @@
 package com.example.tooly
 
+import android.app.Activity
 import android.content.Context
-import android.widget.Toast
+import android.content.ContextWrapper
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,87 +34,130 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
-@Preview()
 @Composable
-fun TextRemover() {
-    var inputTxt by remember { mutableStateOf("") }
+fun TextRemover(intent: Intent?) {
     val isImeVisible = WindowInsets.isImeVisible
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "Phone Extractor",
-                modifier = Modifier
-                    .weight(2.0f)
-                    .padding(top = 75.dp),
-                fontSize = 33.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
-            OutlinedTextField(
-                onValueChange = { inputTxt = it },
-                value = inputTxt,
-                label = { Text("enter text ") },
-                shape = RoundedCornerShape(25.dp),
-                trailingIcon = {
-                    IconButton(
-                        content = {
-                            Icon(
-                                imageVector = Icons.Filled.ContentPaste,
-                                contentDescription = "Paste"
-                            )
-                        },
-                        onClick = {
-                            inputTxt = clipboardManager.getText().toString()
-                        },
-                    )
-                }
-            )
-            Button(
-                onClick = {
-                    clipboardManager.setText(AnnotatedString(processTxt(inputTxt, context)))
-                    inputTxt = ""
-                },
-                modifier = Modifier.padding(
-                    bottom = if (isImeVisible) 140.dp else 90.dp,
-                    top = 20.dp
-                )
+    val developerOptionsIntent = Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
+    val keyboardManger = LocalSoftwareKeyboardController.current
+    val dismissAppIntent = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_HOME) }
+    var inputTxt by remember { mutableStateOf("") }
+
+    LaunchedEffect(intent) {
+        if ( intent?.action == Intent.ACTION_SEND && intent.type?.startsWith("text/") == true) {
+            val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+            if (!sharedText.isNullOrEmpty()) {
+                inputTxt = sharedText
+            }else
+                clipboardManager.getText()?.let { inputTxt = it.text }
+        }else
+            clipboardManager.getText()?.let { inputTxt = it.text }
+
+    }
+
+
+    Dialog(
+        onDismissRequest = { context.startActivity(dismissAppIntent) },
+    ) {
+            Card(
+               //modifier = Modifier.size(width = 350.dp, height = 199.dp),
+                shape = RoundedCornerShape(35.dp)
             ) {
-                Text("Extract")
+                Column(
+                    modifier = Modifier.padding(15.dp),
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "Phone Extractor",
+                            modifier = Modifier.weight(2f),
+                            fontSize = 27.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        IconButton(onClick = {
+                            context.startActivity(developerOptionsIntent)
+                        }) {
+                            Icon(Icons.Filled.DeveloperMode, contentDescription = "dev settings")
+                        }
+                    }
+
+
+                    OutlinedTextField(
+                        onValueChange = { inputTxt = it },
+                        value = inputTxt,
+                        label = { Text("enter text ") },
+                        shape = RoundedCornerShape(25.dp),
+                        maxLines = 4,
+                        trailingIcon = {
+                            IconButton(
+
+                                content = {
+                                    if (inputTxt.isEmpty()){
+                                        Icon(
+                                            imageVector = Icons.Filled.ContentPaste,
+                                            contentDescription = "Paste"
+                                        )
+                                    }else{
+                                        Icon(
+                                            imageVector = Icons.Filled.ClearAll,
+                                            contentDescription = "Paste"
+                                        )
+                                    }
+
+                                },
+                                onClick = {
+                                    if (inputTxt.isEmpty())
+                                    inputTxt = clipboardManager.getText().toString()
+                                    else
+                                        inputTxt=""
+                                },
+                            )
+                        }
+                    )
+                    Button(
+                        onClick = {
+                            clipboardManager.setText(AnnotatedString(processTxt(inputTxt)))
+                            inputTxt = ""
+                            keyboardManger?.hide()
+                            context.startActivity(dismissAppIntent)
+                        },
+                        modifier = Modifier.padding(top = 10.dp)
+                    ) {
+                        Text("Extract")
+                    }
+                }
             }
         }
-    }
+
 }
 
-fun processTxt(txt: String, context: Context): String {
+fun processTxt( txt: String): String {
+    if (txt.isBlank()) return ""
 
-    var formattedTxt = txt.filter { !it.isWhitespace() }
-    formattedTxt = formattedTxt.map { it ->
-        if (Character.getNumericValue(it) in 0..9) {
-            Character.getNumericValue(it).toString()
-        } else {
-            it
-        }
-    }.joinToString("")
-    println(formattedTxt)
+    txt.filter { !it.isWhitespace() }
+    var extracted = ""
+   for(i in 0..txt.length){
 
-    formattedTxt = formattedTxt.replace("[^0-9]".toRegex(), "")
-    if (formattedTxt.length < 11) {
-        Toast.makeText(context, "data isn't valid", Toast.LENGTH_SHORT).show()
-    } else {
-        var num = formattedTxt.indexOf("01")
-        formattedTxt = formattedTxt.substring(num, num + 11)
-    }
-    return formattedTxt
+       if(extracted.length==11)
+           break
+
+       if (Character.getNumericValue(txt[i]) in 0..9)
+           extracted+= Character.getNumericValue(txt[i])
+       else
+           extracted = ""
+
+   }
+
+    return extracted
 }

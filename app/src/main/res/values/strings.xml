@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">tooly</string>
+    <string name="DEV_OP">Dev Options</string>
+
 </resources>

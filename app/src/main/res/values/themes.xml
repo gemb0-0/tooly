@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!--<resources>-->
+<!--    <style name="Theme.Tooly" parent="android:Theme.Holo.Dialog.NoActionBar" />-->
 
-    <style name="Theme.Tooly" parent="android:Theme.Material.Light.NoActionBar" />
+<!--&lt;!&ndash;    <style name="Theme.Tooly" parent="android:Theme.Material.Light.NoActionBar" />&ndash;&gt;-->
+<!--</resources>-->
+
+
+
+<resources>
+     <style name="Theme.Tooly" parent="android:Theme.Material.Light.NoActionBar" >
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+         <item name="android:windowIsTranslucent">true</item>
+
+
+    </style>
 </resources>
