@@ -13,25 +13,52 @@
         android:theme="@style/Theme.Tooly"
         tools:targetApi="31">
         <activity
+            android:name=".DumpActivity"
+            android:exported="true"
+            android:label="@string/title_activity_dump"
+            android:theme="@style/Theme.Tooly" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </activity>
+
+        <service
+            android:name=".DevOptService"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@drawable/rounded_developer_mode_24"
+            android:label="@string/my_default_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Tooly"
             android:windowSoftInputMode="stateVisible|adjustResize">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
+                <action android:name="android.intent.action.PROCESS_TEXT" />
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:mimeType="text/*" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

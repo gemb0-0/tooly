@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">tooly</string>
     <string name="DEV_OP">Dev Options</string>
+    <string name="my_default_tile_label">Dev Options</string>
+    <string name="title_activity_dump">DumpActivity</string>
 
 </resources>
