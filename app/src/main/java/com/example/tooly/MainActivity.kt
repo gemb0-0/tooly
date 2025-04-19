@@ -1,12 +1,10 @@
 package com.example.tooly
 
-import android.app.PendingIntent
+import android.app.Activity
 import android.content.Intent
-import android.content.pm.ShortcutInfo
-import android.content.pm.ShortcutManager
-import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.mutableStateOf
@@ -20,15 +18,25 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        CreateDevOptionShortcut()
+        createDevOptionShortcut()
         // enableEdgeToEdge()
+
+        if (intent?.action == Intent.ACTION_PROCESS_TEXT) {
+           // currentIntent.value = intent
+            Log.i("intent","ACTION_PROCESS_TEXT on create")
+            val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)
+            val processedText = processTxt(text.toString())
+            val result = Intent()
+            result.putExtra(Intent.EXTRA_PROCESS_TEXT, processedText)
+            setResult(Activity.RESULT_OK, result)
+            finish()
+        }
 
         setContent {
             ToolyTheme {
-                //Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+
                 TextRemover(currentIntent.value)
-                // DialogSizedApp(onDismiss = { onBackPressedDispatcher.onBackPressed() })
-                //   }
+
             }
         }
     }
@@ -36,10 +44,16 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        currentIntent.value=intent
+        //idk why if it fires to new activity not new intent even when the app is running (will check this later)
+        if (intent.action==Intent.ACTION_PROCESS_TEXT)
+            Log.i("intent","ACTION_PROCESS_TEXT")
+        else if (intent.action == Intent.ACTION_SEND)
+            Log.i("intent","ACTION_SEND")
+
+        currentIntent.value = intent
     }
 
-    private fun CreateDevOptionShortcut() {
+    private fun createDevOptionShortcut() {
         val shortcut = ShortcutInfoCompat.Builder(this, "gg")
             .setShortLabel("Dev Options")
             .setLongLabel("Open Developer Settings")
